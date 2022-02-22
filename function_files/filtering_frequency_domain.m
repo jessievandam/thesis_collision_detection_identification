@@ -13,62 +13,71 @@ function [forceFFT, forceFFTlim, forceFFThann, forceFFThannlim, freqResReal, tim
     timeResReal = 1/freqResReal;   % [sec]
 
     %% FFT algorithm
-    forceFFT = zeros(3, endInd);
-    forceFFThann = zeros(3, endInd);
-    forceFFTlim = zeros(3, endInd);
-    forceFFThannlim = zeros(3, endInd);
     
-    for k = 1:3 % loop over three arm forces
-        % start from the moment the window covers the complete start
-        for i = (1+windowSize):(endInd) 
+    % initialize
+    forceFFT = cell(2,1);
+    forceFFTlim = cell(2,1);
+    forceFFThann = cell(2,1);
+    forceFFThannlim = cell(2,1);
 
-            % hann window
-            w = hann(windowSize*2);
+    for i = 1:2
+        forceFFT{i,1} = zeros(3, endInd);
+        forceFFThann{i,1} = zeros(3, endInd);
+        forceFFTlim{i,1} = zeros(3, endInd);
+        forceFFThannlim{i,1} = zeros(3, endInd);
+    end
+    
+    for h = 1:2
+        for k = 1:3 % loop over three arm forces
+            % start from the moment the window covers the complete start
+            for i = (1+windowSize):(endInd) 
 
-            % FFT: convert time domain signal to frequency domain
-            FFT = fft(force(k,(i-windowSize+1):i), windowSize);       
+                % hann window
+                w = hann(windowSize*2);
 
-            % FFT with hann: convert time domain signal to frequency domain 
-            FFThann = fft(force(k,(i-windowSize+1):i).*w(1:windowSize)', windowSize);     
+                % FFT: convert time domain signal to frequency domain
+                FFT = fft(force{h,1}(k,(i-windowSize+1):i), windowSize);       
 
-            % normalize (before computing one norm)
-            FFT = FFT/windowSize;
-            FFThann = FFThann/windowSize;
+                % FFT with hann: convert time domain signal to frequency domain 
+                FFThann = fft(force{h,1}(k,(i-windowSize+1):i).*w(1:windowSize)', windowSize);     
 
-            % compute one norm
-            accum = 0;
-            for j = 1:windowSize
-                accum = accum + real(FFT(1,j))*real(FFT(1,j)) + imag(FFT(1,j))*imag(FFT(1,j));
+                % normalize (before computing one norm)
+                FFT = FFT/windowSize;
+                FFThann = FFThann/windowSize;
+
+                % compute one norm
+                accum = 0;
+                for j = 1:windowSize
+                    accum = accum + real(FFT(1,j))*real(FFT(1,j)) + imag(FFT(1,j))*imag(FFT(1,j));
+                end
+                oneNorm = sqrt(accum); % power in time domain
+                forceFFT{h,1}(k,i) = oneNorm;
+
+                % compute one norm limited spectrum
+                accumLim = 0;      
+                for j = f1:f2
+                    accumLim = accumLim + real(FFT(1,j))*real(FFT(1,j)) + imag(FFT(1,j))*imag(FFT(1,j));
+                end
+                oneNormLim = sqrt(accumLim);  % power in time domain
+                forceFFTlim{h,1}(k,i) = oneNormLim;
+
+                % compute one norm hann
+                accumHann = 0;
+                for j = 1:windowSize
+                    accumHann = accumHann + real(FFThann(1,j))*real(FFThann(1,j)) + imag(FFThann(1,j))*imag(FFThann(1,j));
+                end
+                oneNormHann = sqrt(accumHann);  % power in time domain
+                forceFFThann{h,1}(k,i) = oneNormHann;
+
+                % compute one norm hann limited spectrum
+                accumHannLim = 0;
+                for j = f3:f4
+                    accumHannLim = accumHannLim + real(FFThann(1,j))*real(FFThann(1,j)) + imag(FFThann(1,j))*imag(FFThann(1,j));
+                end
+                oneNormHannLim = sqrt(accumHannLim);  % power in time domain
+                forceFFThannlim{h,1}(k,i) = oneNormHannLim;
             end
-            oneNorm = sqrt(accum); % power in time domain
-            forceFFT(k,i) = oneNorm;
-
-            % compute one norm limited spectrum
-            accumLim = 0;      
-            for j = f1:f2
-                accumLim = accumLim + real(FFT(1,j))*real(FFT(1,j)) + imag(FFT(1,j))*imag(FFT(1,j));
-            end
-            oneNormLim = sqrt(accumLim);  % power in time domain
-            forceFFTlim(k,i) = oneNormLim;
-            
-            % compute one norm hann
-            accumHann = 0;
-            for j = 1:windowSize
-                accumHann = accumHann + real(FFThann(1,j))*real(FFThann(1,j)) + imag(FFThann(1,j))*imag(FFThann(1,j));
-            end
-            oneNormHann = sqrt(accumHann);  % power in time domain
-            forceFFThann(k,i) = oneNormHann;
-
-            % compute one norm hann limited spectrum
-            accumHannLim = 0;
-            for j = f3:f4
-                accumHannLim = accumHannLim + real(FFThann(1,j))*real(FFThann(1,j)) + imag(FFThann(1,j))*imag(FFThann(1,j));
-            end
-            oneNormHannLim = sqrt(accumHannLim);  % power in time domain
-            forceFFThannlim(k,i) = oneNormHannLim;
         end
     end
-%     forceFFThann(k,:) = stft(force(k,:),freq,'Window',w(1:windowSize),'FFTLength',size(force(k,:),2)); % ,'OverlapLength',windowSize-1
-
 end
 

@@ -1,5 +1,5 @@
 function [] = plot_detection_time_domain(magFTForce,timeftShifted,forceFiltered, time,...
-                            startTime, endTime, constThresh, collision)
+                            startTime, endTime, constThresh, threshDyn, collision)
 
 %   Plot forces filtered in time domain with constant and dynamic threshold
 
@@ -27,6 +27,10 @@ function [] = plot_detection_time_domain(magFTForce,timeftShifted,forceFiltered,
     plot(time(n:m1),  abs(forceFiltered(1,n:m1)), 'r', 'LineWidth', LW)
     hold on
     plot(time(n:m1),  constThresh(1,n:m1), 'k', 'LineWidth', 2)
+    if ~isempty(threshDyn)
+        hold on
+        plot(time(n:m1),  threshDyn(1,n:m1), 'b', 'LineWidth', LW)
+    end
     hold off
     grid on
     title('Arm force x','Interpreter','latex','Fontsize', FS)
@@ -37,11 +41,15 @@ function [] = plot_detection_time_domain(magFTForce,timeftShifted,forceFiltered,
     plot(time(n:m1),  abs(forceFiltered(2,n:m1)), 'r', 'LineWidth', LW)
     hold on    
     plot(time(n:m1),  constThresh(2,n:m1), 'k', 'LineWidth', 2)
+    if ~isempty(threshDyn)
+        hold on
+        plot(time(n:m1),  threshDyn(2,n:m1), 'b', 'LineWidth', LW)
+    end
     hold off
     grid on
     title('Arm force y','Interpreter','latex','Fontsize', FS)
     ylabel('Force [N]','Interpreter','latex','Fontsize', FS)
-    leg = legend('abs(filtered force)','const thresh');
+    leg = legend('abs(filtered force)','const thresh','dyn thresh');
     set(leg, 'Location', 'east',  'Interpreter', 'latex','Fontsize', 15);
     xlim([time(nn) time(mm)])
 
@@ -49,6 +57,10 @@ function [] = plot_detection_time_domain(magFTForce,timeftShifted,forceFiltered,
     plot(time(n:m1),  abs(forceFiltered(3,n:m1)), 'r', 'LineWidth', LW)
     hold on
     plot(time(n:m1),  constThresh(3,n:m1), 'k', 'LineWidth', 2)
+    if ~isempty(threshDyn)
+        hold on
+        plot(time(n:m1),  threshDyn(3,n:m1), 'b', 'LineWidth', LW)
+    end
     hold off
     grid on
     title('Arm force z','Interpreter','latex','Fontsize', FS)

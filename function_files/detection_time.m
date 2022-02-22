@@ -1,4 +1,4 @@
-function [collision] = detection_time(force,thresh,endInd,Ts, T_twopeaks, T_rippling,time)
+function [collision] = detection_time(force,thresh,endInd,Ts, T_twopeaks, T_rippling)
 
 %   Detect collision based on unfiltered x and y force and filtered z force
 

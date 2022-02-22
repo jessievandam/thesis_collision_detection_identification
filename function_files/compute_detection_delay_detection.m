@@ -84,7 +84,6 @@ function [timesCollisionCutFinal,timesFTCutFinal, delay, delayAv] =...
     end
     timesFTCutFinal = timesFTCutFinal(1:count-1);   
     
-   
     %% compute delay
     
     delaySize = min(size(timesFTCutFinal,1), size(timesCollisionCutFinal,1));

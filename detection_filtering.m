@@ -73,7 +73,7 @@ load('arm_push_home');
 % load('armctrl_push_andreea');
 
 % recordings 24-01
-load('armctrljoint_basepush_armmove');
+% load('armctrljoint_basepush_armmove');
 % load('armctrljoint_grab');
 % load('armctrljoint_maria');
 % load('ocs2base_trot');
@@ -119,22 +119,10 @@ fc = 1.0; % [Hz]
 %% read values FT sensor EE
 % only works for recordings 21-12 and 24-01
 
-[ftForceEE, ftForceEELPF, magFTForceEE, magFTForceEElpf] = read_ft_ee(bag,n3sec,n4sec, endInd, time, timeVec);
-
-forceMinusEE = cell(2,1);
-for h = 1:2 % loop over base and arm jacobian
-    for i = 1:endInd  
-        forceMinusEE{h,1}(:,i) = force{h,1}(:,i)-ftForceEE(:,i);
-    end
-end
+[ftForceEE, ftForceEELPF, magFTForceEE, magFTForceEElpf, forceMinusEE] =...
+    read_ft_ee(bag,endInd, time, timeVec, force);
                      
 %% frequency domain filtering: FFT and Hann-window
-
-% initialize
-forceFFT = cell(2,1);
-forceFFTlim = cell(2,1);
-forceFFThann = cell(2,1);
-forceFFThannlim = cell(2,1);
 
 % time window size nfft to convert force from time to frequency domain
 % freq/nfft = freq res = 1/(time resolution)
@@ -148,12 +136,13 @@ f2 = 4;   % max for FFT
 f3 = 2;   % min for FFT + hann
 f4 = 4;   % max for FFT + hann
 
+
 % normal
-[forceFFT{1,1}, forceFFTlim{1,1}, forceFFThann{1,1}, forceFFThannlim{1,1}, freqResReal, timeResReal, windowSize] = ...
-                    filtering_frequency_domain(freqRes, Ts, force{1,1}, f1, f2, f3, f4, endInd);
+[forceFFT, forceFFTlim, forceFFThann, forceFFThannlim, freqResReal, timeResReal, windowSize] = ...
+                    filtering_frequency_domain(freqRes, Ts, force, f1, f2, f3, f4, endInd);
 % EE force subtraction
-% [forceFFT{1,1}, forceFFTlim{1,1}, forceFFThann{1,1}, forceFFThannlim{1,1}, freqResReal, timeResReal, windowSize] = ...
-%                     filtering_frequency_domain(freqRes, Ts, forceMinusEE{1,1}, f1, f2, f3, f4, endInd);
+% [forceFFT, forceFFTlim, forceFFThann, forceFFThannlim, freqResReal, timeResReal, windowSize] = ...
+%                     filtering_frequency_domain(freqRes, Ts, forceMinusEE, f1, f2, f3, f4, endInd);
 
 %% plot raw and filtered forces to tune freq domain filtering
 
@@ -167,18 +156,14 @@ plot_filtering_freq_domain(magFTForce,timeftShifted,...
 
 %% time domain filtering: add BPF to forces
 
-% initialize
-forceBPF = cell(2,1);
-forceHPF = cell(2,1);
-
 % parameters BPF 
-cutOffFreqMin = freqResReal;  % [Hz] HPF cut-off freq
+cutOffFreqMin = freqResReal;    % [Hz] HPF cut-off freq
 cutOffFreqMax = freqResReal*4;  % [Hz] LPF cut-off freq
 
 % normal
-[forceBPF{1,1}, forceHPF{1,1}] = filtering_time_domain(cutOffFreqMin,cutOffFreqMax,force{2,1}, timeVec, endInd);
+[forceBPF, forceHPF] = filtering_time_domain(cutOffFreqMin,cutOffFreqMax,force, timeVec, endInd);
 % EE force subtraction
-% [forceBPF{1,1}, forceHPF{1,1}] = filtering_time_domain(cutOffFreqMin,cutOffFreqMax,forceMinusEE{1,1}, timeVec, endInd);
+% [forceBPF, forceHPF] = filtering_time_domain(cutOffFreqMin,cutOffFreqMax,forceMinusEE, timeVec, endInd);
 
 %% plot raw and filtered forces to tune time domain filtering
 
@@ -218,7 +203,7 @@ threshConst = constValues .* ones(3,endInd);
 T_rippling = 0.6;
 T_twopeaks = 1.5; 
 [collisionTime] = detection_time(forceBPF{1,1},threshConst, endInd,...
-                Ts, T_twopeaks, T_rippling,time);
+                Ts, T_twopeaks, T_rippling);
 
 % plot full time interval
 startTime = nnsec;
@@ -228,7 +213,7 @@ endTime = mmsec;
 constThresh = threshConst;     
 forceFiltered = forceBPF{1,1};
 plot_detection_time_domain(magFTForce,timeftShifted,forceFiltered, time,...
-                            startTime, endTime, constThresh, collisionTime);
+                            startTime, endTime, constThresh,[], collisionTime);
 
 %% compute delay
 

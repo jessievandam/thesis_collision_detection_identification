@@ -77,17 +77,6 @@ function [] = plot_filtering_time_domain(magFTForce, timeftShifted,forceFiltered
     ylabel('Force [N]','Interpreter','latex','Fontsize', FS)
     xlim([time(nn) time(mm)])
  
-    %TEMPORARY to check FT EE forces
-%     subplot(4,1,3)
-%     plot(time(n:m1),  magFTForceEE(n:m1), 'r', 'LineWidth', LW)
-%     hold on
-%     plot(time(n:m1),  magFTForceEElpf(n:m1), 'b', 'LineWidth', LW)
-%     hold off
-%     grid on
-%     title("FT sensor EE",'Interpreter','latex','Fontsize', FS)
-%     ylabel('Force [N]','Interpreter','latex','Fontsize', FS)
-%     xlim([time(nn) time(mm)])
-
     subplot(4,1,4)
     plot(timeftShifted(n:m2), magFTForce(n:m2), 'k', 'LineWidth', LW)
     hold off
@@ -97,6 +86,5 @@ function [] = plot_filtering_time_domain(magFTForce, timeftShifted,forceFiltered
     xlim([time(nn) time(mm)])
     xlabel('Time [sec]','Interpreter','latex','Fontsize', FS)
     
-%     exportgraphics(gcf, 'fig_armfiltered_armmove.png', 'Resolution', 300);
 end
 

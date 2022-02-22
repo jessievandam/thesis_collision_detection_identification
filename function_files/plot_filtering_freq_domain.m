@@ -88,7 +88,6 @@ function [] = plot_filtering_freq_domain(magFTForce,timeftShifted,forceFiltered1
     ylabel('Force[N]','Interpreter','latex','Fontsize', FS)
     xlim([time(nn) time(mm)])
     xlabel('Time [sec]','Interpreter','latex','Fontsize', FS)
-    
-%     exportgraphics(gcf, 'fig_comparison_withandwithouthann.png', 'Resolution', 300);
+   
 end
 
